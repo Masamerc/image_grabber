@@ -1,8 +1,6 @@
 import requests
-import time
+from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
-
-start = time.perf_counter()
 
 img_urls = [
     "https://images.unsplash.com/photo-1576092609932-2b3abade2479", 
@@ -22,6 +20,3 @@ def download_image(img_url):
 with ThreadPoolExecutor() as executor:
     results = executor.map(download_image, img_urls)
 
-finish = time.perf_counter()
-
-print(f"Download completed in {round(finish - start, 2)}...")
