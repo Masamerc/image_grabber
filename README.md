@@ -2,6 +2,10 @@
 
 A graphical tool written in python which scarapes and saves images from a specified website.
 
+*as of 1/30/2020, the app has only been tested on Windows10
+
+![quick demo](./assets/demo.gif)
+
 ## Main Features
 1. Find all the links to images on a website (.jpg / .png / .gif)
 2. Download the linked images taking advantage of multi-threading. 

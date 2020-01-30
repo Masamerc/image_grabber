@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import messagebox, PhotoImage, filedialog
-from tkinter.font import Font
 import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
@@ -22,63 +21,56 @@ class Window:
 
         self.message = Label(root, text="Enter Target URL:")
         self.message.grid(row = self.first_row, column = self.first_column,
-                            sticky = "e", pady=10, padx=10)
+                            sticky = "e")
 
         # Text box for the target url
-        self.entry_box = Entry(root, width=120)
+        self.entry_box = Entry(root, width=100)
         self.entry_box.grid(row=self.first_row,
                             column=self.first_column + 1, pady=10)
-
         # Button to scrape image urls from the url
         self.get_url_button = Button(text="Get Images", command=self.scrape_urls, width=12)
         self.get_url_button.grid(
-                            row=self.first_row, column=self.first_column + 2, sticky="w", pady=5)
+                            row=self.first_row, column=self.first_column + 2, sticky="w")
         
         # Button to select a folder in which images will be saved
-        self.file_button = Button(text="Open Folder", command=self.get_folder, width=10)
+        self.file_button = Button(
+            text="Open Folder", command=self.get_folder, width=12)
         self.file_button.grid(
-                            row=self.first_row, column=self.first_column + 3, sticky="w", pady=5)
+                            row=self.first_row, column=self.first_column + 3, sticky="w")
 
         # Button to start downloading images
-        self.scrape_button = Button(text="Download Images", command=self.save_images, width=27)
+        self.scrape_button = Button(text="Download Images", command=self.save_images, width=24)
         self.scrape_button.grid(
-                            row=self.first_row + 1, column=self.first_column + 2, columnspan=2, sticky="w")
+            row=self.first_row + 1, column=self.first_column + 2, columnspan=2, sticky="s")
 
         # Text box that shows the web-scraping results
-        self.lines = 45
-        self.text = Text(root, height=self.lines, width=120)
+        self.lines = 30
+        self.text = Text(root, height=self.lines, width=80)
         self.text.grid(row = self.first_row + 2, column = self.first_column + 1,
-                        padx=5, pady=5)
+                        pady=10)
 
-        # Adding a scrollbar
+        # Scrollbar for the text box
         self.scroll_bar = Scrollbar(root)
         self.scroll_bar.grid(row = self.first_row + 2, column = self.first_column + 2, sticky="w") 
         self.text.configure(yscrollcommand=self.scroll_bar.set)
         self.scroll_bar.configure(command=self.text.yview)
 
+    def get_folder(self):
+        """
+        Lets users choose destination folder 
+        """
+        self.folder = filedialog.askdirectory(initialdir="/")
+        if self.folder:
+            displayed_text = "Selected Destination: " + "\n" + self.folder
+        else:
+            displayed_text = "Please Select a Folder"
+        label = Label(root, text=displayed_text, bg='#7EDC84')
+        label.grid(row=self.first_row + 1, column=self.first_column + 1)
 
-    def download_image(self, image_url):
+    def scrape_urls(self):
         """
         Makes request to the target url and gets all the links to images
         """
-        response = requests.get(image_url)
-        filename = image_url.split("/")[-1]
-        if "." not in filename:
-            filename = filename + ".jpeg"
-        with open(f"{self.folder}/{filename}", "wb") as f:
-            f.write(response.content)
-
-    def save_images(self):
-        """
-        Downloads images taking advantage of multi-thread pool
-        """
-        self.text.insert(END, "--Started Saving Files.....")
-        with ThreadPoolExecutor() as executor:
-            executor.map(self.download_image, self.image_urls)
-        messagebox.showinfo(title="Operation Completed", message=f"Successfully saved {len(self.image_urls)} images")
-
-    def scrape_urls(self):
-        
         target_url = self.entry_box.get()
         prefix_target_url = target_url.split("/")[:3]
         prefix_target_url = "/".join(prefix_target_url)
@@ -108,20 +100,31 @@ class Window:
             self.text.insert(END, f"|--{image}")
             self.text.insert(END, "\n" + "|")
 
-    def get_folder(self):
-        self.folder = filedialog.askdirectory(initialdir="/")
-        if self.folder:
-            displayed_text = "Selected Destination: "+ "\n" + self.folder 
-        else:
-            displayed_text = "Please Select a Folder"
-        label = Label(root, text=displayed_text, bg='#7EDC84')
-        label.grid(row=self.first_row + 1, column=self.first_column + 1)
-        
+    def download_image(self, image_url):
+        """
+        Makes request to the target url and gets all the links to images
+        """
+        response = requests.get(image_url)
+        filename = image_url.split("/")[-1]
+        if "." not in filename:
+            filename = filename + ".jpeg"
+        with open(f"{self.folder}/{filename}", "wb") as f:
+            f.write(response.content)
+
+    def save_images(self):
+        """
+        saving images taking advantage of multi-thread pool
+        """
+        self.text.insert(END, "--Started Saving Files.....")
+        with ThreadPoolExecutor() as executor:
+            executor.map(self.download_image, self.image_urls)
+        messagebox.showinfo(title="Operation Completed",
+                            message=f"Successfully saved {len(self.image_urls)} images")
 
 if __name__ == "__main__":
     try:
         root = Tk()
-        root.tk.call('tk', 'scaling', 1.5)
+        # root.tk.call('tk', 'scaling', 1.5)
         window = Window(root)
         root.mainloop()
 
